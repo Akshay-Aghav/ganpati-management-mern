@@ -1,0 +1,1 @@
+import {Link} from 'react-router-dom'; export default function Home(){return <section className="hero"><h1>Ganpati Management System</h1><p>Manage registrations, contributions and festival expenses in one place.</p><Link className="btn" to="/register">Register Participant</Link></section>}
