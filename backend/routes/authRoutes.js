@@ -5,29 +5,34 @@ const Admin = require("../models/Admin");
 
 const router = express.Router();
 
-// Create admin account
+/*
+  CREATE ADMIN ACCOUNT
+  POST /api/auth/setup
+*/
 router.post("/setup", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { name, email, password } = req.body;
 
-    if (!username || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({
-        message: "Username and password are required",
+        message: "Name, email and password are required",
       });
     }
 
-    const existingAdmin = await Admin.findOne({ username });
+    const existingAdmin = await Admin.findOne({ email });
 
     if (existingAdmin) {
       return res.status(400).json({
-        message: "Admin already exists",
+        message: "Admin account already exists",
       });
     }
 
+    // Hash the password before saving it
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = await Admin.create({
-      username,
+      name,
+      email,
       password: hashedPassword,
     });
 
@@ -35,7 +40,8 @@ router.post("/setup", async (req, res) => {
       message: "Admin created successfully",
       admin: {
         id: admin._id,
-        username: admin.username,
+        name: admin.name,
+        email: admin.email,
       },
     });
   } catch (error) {
@@ -48,43 +54,74 @@ router.post("/setup", async (req, res) => {
   }
 });
 
-// Admin login
+/*
+  ADMIN LOGIN
+  POST /api/auth/login
+*/
 router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
-        message: "Username and password are required",
+        message: "Email and password are required",
       });
     }
 
-    const admin = await Admin.findOne({ username });
+    const admin = await Admin.findOne({ email });
 
     if (!admin) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "Invalid email or password",
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      admin.password
-    );
+    let isPasswordCorrect = false;
+
+    /*
+      Supports both:
+      1. Old plain-text password stored in MongoDB
+      2. New bcrypt-hashed password
+    */
+
+    if (admin.password.startsWith("$2")) {
+      // Password is already bcrypt hashed
+      isPasswordCorrect = await bcrypt.compare(
+        password,
+        admin.password
+      );
+    } else {
+      // Password is currently plain text
+      isPasswordCorrect = password === admin.password;
+
+      // If correct, convert it to a secure bcrypt hash
+      if (isPasswordCorrect) {
+        admin.password = await bcrypt.hash(password, 10);
+        await admin.save();
+      }
+    }
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
-        message: "Invalid username or password",
+        message: "Invalid email or password",
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        message: "JWT_SECRET is missing in environment variables",
       });
     }
 
     const token = jwt.sign(
       {
         id: admin._id,
-        username: admin.username,
+        email: admin.email,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      {
+        expiresIn: "1d",
+      }
     );
 
     res.json({
@@ -92,7 +129,8 @@ router.post("/login", async (req, res) => {
       token,
       admin: {
         id: admin._id,
-        username: admin.username,
+        name: admin.name,
+        email: admin.email,
       },
     });
   } catch (error) {
