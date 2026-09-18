@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:5000/api/participants";
+const API_URL =
+  "https://ganpati-management-backend.onrender.com/api/participants";
 
 function Participants() {
   const [participants, setParticipants] = useState([]);

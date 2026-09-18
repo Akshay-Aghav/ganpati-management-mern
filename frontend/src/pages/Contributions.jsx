@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/contributions";
-
+const API_URL =
+  "https://ganpati-management-backend.onrender.com/api/contributions";
 function Contributions() {
   const [contributions, setContributions] = useState([]);
   const [loading, setLoading] = useState(true);

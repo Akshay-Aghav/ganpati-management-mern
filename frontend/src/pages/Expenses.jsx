@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-const EXPENSE_API = "http://localhost:5000/api/expenses";
-const SUMMARY_API = "http://localhost:5000/api/summary";
+const EXPENSE_API = "https://ganpati-management-backend.onrender.com/api/expenses";
+const SUMMARY_API = "https://ganpati-management-backend.onrender.com/api/summary";
 
 const initialFormData = {
   title: "",
