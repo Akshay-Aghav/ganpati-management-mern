@@ -8,27 +8,26 @@ const router = express.Router();
 // Create admin account
 router.post("/setup", async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { username, password } = req.body;
 
-    if (!name || !email || !password) {
+    if (!username || !password) {
       return res.status(400).json({
-        message: "Name, email and password are required",
+        message: "Username and password are required",
       });
     }
 
-    const existingAdmin = await Admin.findOne({ email });
+    const existingAdmin = await Admin.findOne({ username });
 
     if (existingAdmin) {
       return res.status(400).json({
-        message: "Admin account already exists",
+        message: "Admin already exists",
       });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = await Admin.create({
-      name,
-      email,
+      username,
       password: hashedPassword,
     });
 
@@ -36,13 +35,15 @@ router.post("/setup", async (req, res) => {
       message: "Admin created successfully",
       admin: {
         id: admin._id,
-        name: admin.name,
-        email: admin.email,
+        username: admin.username,
       },
     });
   } catch (error) {
+    console.error("Admin setup error:", error.message);
+
     res.status(500).json({
-      message: error.message,
+      message: "Failed to create admin",
+      error: error.message,
     });
   }
 });
@@ -50,13 +51,19 @@ router.post("/setup", async (req, res) => {
 // Admin login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
+    if (!username || !password) {
+      return res.status(400).json({
+        message: "Username and password are required",
+      });
+    }
+
+    const admin = await Admin.findOne({ username });
 
     if (!admin) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "Invalid username or password",
       });
     }
 
@@ -67,19 +74,17 @@ router.post("/login", async (req, res) => {
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
-        message: "Invalid credentials",
+        message: "Invalid username or password",
       });
     }
 
     const token = jwt.sign(
       {
         id: admin._id,
-        email: admin.email,
+        username: admin.username,
       },
-      process.env.JWT_SECRET || "ganpati-secret-key",
-      {
-        expiresIn: "1d",
-      }
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
     );
 
     res.json({
@@ -87,13 +92,15 @@ router.post("/login", async (req, res) => {
       token,
       admin: {
         id: admin._id,
-        name: admin.name,
-        email: admin.email,
+        username: admin.username,
       },
     });
   } catch (error) {
+    console.error("Login error:", error.message);
+
     res.status(500).json({
-      message: error.message,
+      message: "Login failed",
+      error: error.message,
     });
   }
 });
