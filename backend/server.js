@@ -47,6 +47,10 @@ app.use(
   require("./routes/authRoutes")
 );
 
+app.use(
+  "/api/media",
+  require("./routes/mediaRoutes")
+);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
