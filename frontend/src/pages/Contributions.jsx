@@ -12,7 +12,7 @@ function Contributions() {
   const [form, setForm] = useState({
   name: "",
   amount: "",
-  paymentMode: "Cash",
+  paymentMode: "",
   note: "",
 });
   const [filterStatus, setFilterStatus] = useState("All");
