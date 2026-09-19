@@ -14,7 +14,7 @@ export default function Login() {
 
     try {
       const response = await api.post("/auth/login", {
-        email,
+        email: email.trim(),
         password,
       });
 
@@ -22,8 +22,11 @@ export default function Login() {
 
       navigate("/dashboard");
     } catch (error) {
+      console.error("Login error:", error);
+
       setMsg(
-        error.response?.data?.message || "Login failed"
+        error.response?.data?.message ||
+          "Login failed"
       );
     }
   };
@@ -49,7 +52,9 @@ export default function Login() {
           required
         />
 
-        <button type="submit">Login</button>
+        <button type="submit">
+          Login
+        </button>
       </form>
 
       <p>{msg}</p>
