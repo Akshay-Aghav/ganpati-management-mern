@@ -21,12 +21,10 @@ function Participants() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Fetch participants when page loads
   useEffect(() => {
     fetchParticipants();
   }, []);
 
-  // Get all participants
   const fetchParticipants = async () => {
     try {
       const response = await fetch(API_URL);
@@ -42,7 +40,6 @@ function Participants() {
     }
   };
 
-  // Handle input changes
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
 
@@ -52,7 +49,6 @@ function Participants() {
     }));
   };
 
-  // Submit participant form
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -62,9 +58,11 @@ function Participants() {
     const participantData = {
       ...formData,
       age: formData.age ? Number(formData.age) : null,
+
       tshirtAmount: formData.tshirtRequired
         ? Number(formData.tshirtAmount || 0)
         : 0,
+
       tshirtSize: formData.tshirtRequired
         ? formData.tshirtSize
         : "",
@@ -106,7 +104,6 @@ function Participants() {
     }
   };
 
-  // Update participant status
   const updateStatus = async (id, status) => {
     try {
       const response = await fetch(`${API_URL}/${id}/status`, {
@@ -130,7 +127,6 @@ function Participants() {
     }
   };
 
-  // Delete participant
   const deleteParticipant = async (id) => {
     const isConfirmed = window.confirm(
       "Are you sure you want to delete this participant?"
@@ -158,7 +154,6 @@ function Participants() {
     }
   };
 
-  // Filter participants according to status
   const filteredParticipants =
     statusFilter === "All"
       ? participants
@@ -198,7 +193,7 @@ function Participants() {
 
       {message && <div className="message">{message}</div>}
 
-      {/* Summary Cards */}
+      {/* SUMMARY CARDS */}
       <div className="summary-grid">
         <div className="summary-card">
           <h3>Total Participants</h3>
@@ -227,11 +222,11 @@ function Participants() {
 
         <div className="summary-card amount-card">
           <h3>T-Shirt Amount</h3>
-          <p>₹{totalTshirtAmount}</p>
+          <p>₹{totalTshirtAmount.toLocaleString("en-IN")}</p>
         </div>
       </div>
 
-      {/* Registration Form */}
+      {/* REGISTRATION FORM */}
       <div className="form-card">
         <h2>Register Participant</h2>
 
@@ -239,6 +234,7 @@ function Participants() {
           <div className="form-grid">
             <div className="form-group">
               <label>Full Name</label>
+
               <input
                 type="text"
                 name="name"
@@ -251,6 +247,7 @@ function Participants() {
 
             <div className="form-group">
               <label>Mobile Number</label>
+
               <input
                 type="tel"
                 name="mobile"
@@ -263,6 +260,7 @@ function Participants() {
 
             <div className="form-group">
               <label>Village</label>
+
               <input
                 type="text"
                 name="village"
@@ -274,6 +272,7 @@ function Participants() {
 
             <div className="form-group">
               <label>Age</label>
+
               <input
                 type="number"
                 name="age"
@@ -286,6 +285,7 @@ function Participants() {
 
             <div className="form-group">
               <label>Gender</label>
+
               <select
                 name="gender"
                 value={formData.gender}
@@ -298,7 +298,7 @@ function Participants() {
             </div>
           </div>
 
-          {/* T-Shirt Section */}
+          {/* T-SHIRT */}
           <div className="tshirt-section">
             <h3>T-Shirt Details</h3>
 
@@ -309,6 +309,7 @@ function Participants() {
                 checked={formData.tshirtRequired}
                 onChange={handleChange}
               />
+
               Participant requires T-shirt
             </label>
 
@@ -316,6 +317,7 @@ function Participants() {
               <div className="tshirt-fields">
                 <div className="form-group">
                   <label>T-Shirt Size</label>
+
                   <select
                     name="tshirtSize"
                     value={formData.tshirtSize}
@@ -333,6 +335,7 @@ function Participants() {
 
                 <div className="form-group">
                   <label>T-Shirt Amount</label>
+
                   <input
                     type="number"
                     name="tshirtAmount"
@@ -353,7 +356,7 @@ function Participants() {
         </form>
       </div>
 
-      {/* Participant List */}
+      {/* PARTICIPANT LIST */}
       <div className="list-card">
         <div className="list-header">
           <h2>Participant List</h2>
@@ -396,8 +399,11 @@ function Participants() {
                 filteredParticipants.map((participant) => (
                   <tr key={participant._id}>
                     <td>{participant.name}</td>
+
                     <td>{participant.mobile}</td>
+
                     <td>{participant.village || "-"}</td>
+
                     <td>{participant.gender}</td>
 
                     <td>
@@ -411,14 +417,20 @@ function Participants() {
                     </td>
 
                     <td>
-                      ₹{participant.tshirtAmount || 0}
+                      {participant.tshirtRequired
+                        ? `₹${Number(
+                            participant.tshirtAmount || 0
+                          ).toLocaleString("en-IN")}`
+                        : "-"}
                     </td>
 
                     <td>
                       <span
-                        className={`status-badge ${participant.status.toLowerCase()}`}
+                        className={`status-badge ${String(
+                          participant.status || "Pending"
+                        ).toLowerCase()}`}
                       >
-                        {participant.status}
+                        {participant.status || "Pending"}
                       </span>
                     </td>
 
